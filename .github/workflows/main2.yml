@@ -1,0 +1,40 @@
+name: CI
+
+on: 
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Use Windows 11
+    runs-on: windows-2022
+
+    steps:
+    - name: Download Ngrok
+      run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
+
+    - name: Extract Ngrok
+      run: Expand-Archive ngrok.zip -DestinationPath ngrok
+
+    - name: Ngrok Authentication
+      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+      env:
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+
+    - name: Enable Remote Desktop
+      run: |
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+
+    - name: Set Password Securely
+      run: |
+        $Password = ConvertTo-SecureString -AsPlainText $Env:ADMIN_PASSWORD -Force
+        Set-LocalUser -Name "runneradmin" -Password $Password
+      env:
+        ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+
+    - name: Start Ngrok Tunnel
+      run: .\ngrok\ngrok.exe tcp 3389
