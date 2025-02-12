@@ -18,7 +18,7 @@ An online tool for removing backgrounds from images effortlessly.
 ## Installation  
 1. Clone the repository:  
    ```bash
-   git clone https://github.com/your-username/imageremover-tool.git
+   git clone https://github.com/akmalukft/ImagerBackgrounremover.git
    cd imageremover-tool
    ```
 2. Install dependencies:  
